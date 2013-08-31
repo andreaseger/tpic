@@ -46,22 +46,7 @@ def download path, url
   open("#{PIC_BASE}/#{path}",'wb') {|f| f << open(url).read }
 end
 
-def run user, count: 200
-  unless File.exists?(user) && Dir.exists?(user)
-    FileUtils.mkdir user
-  end
-  tweets = get_tweets user, count
-  images =  tweets.map do |tweet|
-    urls = extract_image_url(tweet)
-    next if urls.nil? || urls.empty?
-    { 'timestamp' => tweet.created_at.strftime('%y%m%d-%H%M'),
-      'url' => urls }
-  end
-  IO.write("#{user}/images.json", images.to_json)
-  download_images images
-end
-
-def download_images images
+def download_images user, images
   images.select!{|e| !(e.nil? || e['url'].empty? )}
   images.each do |img|
     next if img['url'].nil?
@@ -76,9 +61,22 @@ def download_images images
   end
 end
 def run_cached user
-  download_images JSON.parse(IO.read("#{user}/images.json"))
+  download_images user, JSON.parse(IO.read("#{PIC_BASE}/#{user}/images.json"))
 end
-
+def run user, count: 200
+  unless File.exists?(user) && Dir.exists?(user)
+    FileUtils.mkdir "#{PIC_BASE}/#{user}"
+  end
+  tweets = get_tweets user, count
+  images =  tweets.map do |tweet|
+    urls = extract_image_url(tweet)
+    next if urls.nil? || urls.empty?
+    { 'timestamp' => tweet.created_at.strftime('%y%m%d-%H%M'),
+      'url' => urls }
+  end
+  IO.write("#{PIC_BASE}/#{user}/images.json", images.to_json)
+  download_images user, images
+end
 
 case ARGV.size
 when 0
@@ -90,7 +88,7 @@ when 1
   run user
 when 2
   user = ARGV.first
-  count = ARGV.second.to_i
+  count = ARGV[1].to_i
   puts "getting picture in the last #{count} tweets for user #{user}"
   run user, count: count
 else
