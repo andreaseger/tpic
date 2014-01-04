@@ -14,32 +14,6 @@ Twitter.configure do |config|
   config.oauth_token_secret = auth['secret']
 end
 
-# def get_tweets user, count, offset
-#   first_page =  if offset
-#                   offset/100 + 1
-#                 else
-#                   1
-#                 end
-#   page_indizies = [first_page]
-#   page_count = count/100
-#   (page_count - 1 ).times do
-#     page_indizies.push(page_indizies.last+1)
-#   end
-#   tweets = []
-#   until page_indizies.empty? do
-#     idx = page_indizies.shift
-#     p [100, idx]
-#     # tweets << Twitter.user_timeline(user, count: 200, page: idx)
-#   end
-#   remaining = count - page_count*100
-#   if remaining > 0
-#     p [remaining, first_page + page_count ]
-#     # tweets << Twitter.user_timeline(user, count: remaining, page: first_page + page_count + 1 )
-#   end
-#   p "fetched tweets from ##{first_page*100} - ##{100*(page_count+first_page)}"
-#   tweets.flatten
-# end
-
 def collect_with_max_id(collection=[], count=200, max_id=nil, &block)
   response = nil
   if count > 200
